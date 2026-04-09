@@ -1,15 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Shield } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
-// Simple session check — replace with real auth state when backend is connected
-const isLoggedIn = () => {
-  return localStorage.getItem("nz_user") !== null;
-};
-
-interface AuthGuardProps {
-  children: React.ReactNode;
-}
+interface AuthGuardProps { children: React.ReactNode }
 
 const AuthGuard = ({ children }: AuthGuardProps) => {
   const navigate = useNavigate();
@@ -18,14 +12,15 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
-    if (isLoggedIn()) {
-      setAllowed(true);
-    } else {
-      // store intended destination so we can redirect back after login
-      sessionStorage.setItem("nz_redirect", location.pathname);
-      navigate("/signin", { replace: true });
-    }
-    setChecking(false);
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        setAllowed(true);
+      } else {
+        sessionStorage.setItem("nz_redirect", location.pathname);
+        navigate("/signin", { replace: true });
+      }
+      setChecking(false);
+    });
   }, [navigate, location.pathname]);
 
   if (checking) {
