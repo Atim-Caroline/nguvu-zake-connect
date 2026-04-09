@@ -1,3 +1,3 @@
-# Welcome to your Lovable project
+# NGUVU ZAKE
 
 TODO: Document your project here
