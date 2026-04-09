@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Globe, ChevronDown } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, LogOut, User } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useLang, Lang } from "@/context/LanguageContext";
+import { supabase } from "@/lib/supabase";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const navKeys = [
   { key: "home", href: "/" },
@@ -22,11 +24,25 @@ const LANGS: { code: Lang; label: string; flag: string }[] = [
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const isHome = location.pathname === "/";
   const { lang, setLang, t } = useLang();
   const currentLang = LANGS.find((l) => l.code === lang)!;
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/50">
@@ -94,23 +110,44 @@ const Header = () => {
             )}
           </div>
 
-          <button
-            onClick={() => navigate("/signin")}
-            className="px-5 py-2 rounded-full text-sm font-semibold border-2 transition-all hover:bg-muted"
-            style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-          >
-            {t("signIn")}
-          </button>
-          <button
-            onClick={() => navigate("/signup")}
-            className="px-5 py-2 rounded-full text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-lg"
-            style={{
-              background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))",
-              boxShadow: "0 4px 16px hsl(330 80% 55% / 0.35)",
-            }}
-          >
-            {t("joinFree")}
-          </button>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-full border-2 border-border text-sm font-medium">
+                <User className="h-4 w-4 text-primary" />
+                <span className="max-w-[120px] truncate">{user.user_metadata?.name || user.email}</span>
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-lg"
+                style={{
+                  background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))",
+                  boxShadow: "0 4px 16px hsl(330 80% 55% / 0.35)",
+                }}
+              >
+                <LogOut className="h-4 w-4" /> Sign out
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate("/signin")}
+                className="px-5 py-2 rounded-full text-sm font-semibold border-2 transition-all hover:bg-muted"
+                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+              >
+                {t("signIn")}
+              </button>
+              <button
+                onClick={() => navigate("/signup")}
+                className="px-5 py-2 rounded-full text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-lg"
+                style={{
+                  background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))",
+                  boxShadow: "0 4px 16px hsl(330 80% 55% / 0.35)",
+                }}
+              >
+                {t("joinFree")}
+              </button>
+            </>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -159,20 +196,41 @@ const Header = () => {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button
-                className="flex-1 py-2.5 rounded-full text-sm font-semibold border-2 transition-all"
-                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                onClick={() => { navigate("/signin"); setMobileOpen(false); }}
-              >
-                {t("signIn")}
-              </button>
-              <button
-                className="flex-1 py-2.5 rounded-full text-sm font-bold text-white transition-all shadow-lg"
-                style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}
-                onClick={() => { navigate("/signup"); setMobileOpen(false); }}
-              >
-                {t("joinFree")}
-              </button>
+              {user ? (
+                <>
+                  <div className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-medium border-2 border-border">
+                    <User className="h-4 w-4 text-primary" />
+                    <span className="truncate max-w-[120px]">{user.user_metadata?.name || user.email}</span>
+                  </div>
+                  <button
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full text-sm font-bold text-white transition-all shadow-lg"
+                    style={{
+                      background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))",
+                      boxShadow: "0 4px 16px hsl(330 80% 55% / 0.35)",
+                    }}
+                    onClick={() => { handleSignOut(); setMobileOpen(false); }}
+                  >
+                    <LogOut className="h-4 w-4" /> Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="flex-1 py-2.5 rounded-full text-sm font-semibold border-2 transition-all"
+                    style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
+                    onClick={() => { navigate("/signin"); setMobileOpen(false); }}
+                  >
+                    {t("signIn")}
+                  </button>
+                  <button
+                    className="flex-1 py-2.5 rounded-full text-sm font-bold text-white transition-all shadow-lg"
+                    style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}
+                    onClick={() => { navigate("/signup"); setMobileOpen(false); }}
+                  >
+                    {t("joinFree")}
+                  </button>
+                </>
+              )}
             </div>
           </nav>
         </div>

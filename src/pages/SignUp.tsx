@@ -30,17 +30,17 @@ const SignUp = () => {
       // Create profile row
       await supabase.from("profiles").insert({ id: data.user.id, name, email });
     }
-    const redirect = sessionStorage.getItem("nz_redirect") || "/";
+    const redirect = sessionStorage.getItem("nz_redirect") || "/community";
     sessionStorage.removeItem("nz_redirect");
     navigate(redirect);
   };
 
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
+    await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/community` } });
   };
 
   const handleApple = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "apple", options: { redirectTo: window.location.origin } });
+    await supabase.auth.signInWithOAuth({ provider: "apple", options: { redirectTo: `${window.location.origin}/community` } });
   };
 
   return (

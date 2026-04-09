@@ -19,7 +19,7 @@ const mentors = [
     rating: 4.8,
     sessions: 95,
     verified: true,
-    photo: "https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=800&h=900&fit=crop",
+    photo: "https://images.pexels.com/photos/7551442/pexels-photo-7551442.jpeg?auto=compress&cs=tinysrgb&w=800&h=900&fit=crop",
     specialty: "Faith · Purpose · Healing",
   },
   {
@@ -29,7 +29,7 @@ const mentors = [
     rating: 4.7,
     sessions: 68,
     verified: true,
-    photo: "https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=800&h=900&fit=crop",
+    photo: "https://images.pexels.com/photos/8471939/pexels-photo-8471939.jpeg?auto=compress&cs=tinysrgb&w=800&h=900&fit=crop",
     specialty: "Career Growth · Leadership · CV",
   },
 ];

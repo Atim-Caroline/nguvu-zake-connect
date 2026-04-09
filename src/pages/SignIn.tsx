@@ -21,17 +21,17 @@ const SignIn = () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) { setError(error.message); return; }
-    const redirect = sessionStorage.getItem("nz_redirect") || "/";
+    const redirect = sessionStorage.getItem("nz_redirect") || "/community";
     sessionStorage.removeItem("nz_redirect");
     navigate(redirect);
   };
 
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
+    await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/community` } });
   };
 
   const handleApple = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "apple", options: { redirectTo: window.location.origin } });
+    await supabase.auth.signInWithOAuth({ provider: "apple", options: { redirectTo: `${window.location.origin}/community` } });
   };
 
   return (

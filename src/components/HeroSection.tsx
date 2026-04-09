@@ -6,7 +6,7 @@ import { useLang } from "@/context/LanguageContext";
 // Black African women actively working in their fields — Pexels verified
 const slides = [
   {
-    url: "https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop",
+    url: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop",
     field: "Technology",
     caption: "Breaking barriers in tech, one line of code at a time.",
   },
@@ -16,7 +16,7 @@ const slides = [
     caption: "Healing communities with knowledge and compassion.",
   },
   {
-    url: "https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop",
+    url: "https://images.pexels.com/photos/7551442/pexels-photo-7551442.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop",
     field: "Business",
     caption: "Building empires, inspiring generations.",
   },
@@ -26,12 +26,12 @@ const slides = [
     caption: "Shaping minds, changing futures.",
   },
   {
-    url: "https://images.pexels.com/photos/7551442/pexels-photo-7551442.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop",
+    url: "https://images.pexels.com/photos/6325984/pexels-photo-6325984.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop",
     field: "Agriculture",
     caption: "Feeding nations, leading with purpose.",
   },
   {
-    url: "https://images.pexels.com/photos/6325984/pexels-photo-6325984.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop",
+    url: "https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop",
     field: "Leadership",
     caption: "Leading with strength, grace, and purpose.",
   },
