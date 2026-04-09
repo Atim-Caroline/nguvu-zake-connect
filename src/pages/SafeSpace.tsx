@@ -1,30 +1,98 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Heart, Shield, ArrowLeft, Send } from "lucide-react";
+import { MessageCircle, Heart, Shield, ArrowLeft, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const categories = ["All", "Relationships", "Mental Health", "Personal Growth", "Career", "Health"];
 
-const initialPosts = [
-  { id: 1, category: "Relationships", text: "How do you deal with family pressure about marriage? I'm 28 and feel like I can't breathe...", replies: 24, hearts: 67, time: "2h ago" },
-  { id: 2, category: "Mental Health", text: "Some days I feel like I'm carrying the weight of everyone around me. Does anyone else feel this?", replies: 41, hearts: 103, time: "5h ago" },
-  { id: 3, category: "Personal Growth", text: "I just got my first job after 2 years of trying. Don't give up, sisters! 💛", replies: 89, hearts: 245, time: "8h ago" },
-];
+type Reply = { id: number; content: string; created_at: string };
+type Post = {
+  id: number; category: string; content: string;
+  replies: number; hearts: number; created_at: string;
+  liked?: boolean; replyList?: Reply[];
+};
+
+const timeAgo = (ts: string) => {
+  const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+  if (diff < 60) return "Just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+};
 
 const SafeSpace = () => {
-  const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [newPost, setNewPost] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Personal Growth");
+  const [expandedPost, setExpandedPost] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState<Record<number, string>>({});
+  const [loading, setLoading] = useState(true);
 
-  const filtered = activeCategory === "All" ? posts : posts.filter(p => p.category === activeCategory);
+  useEffect(() => { fetchPosts(); }, []);
 
-  const handlePost = () => {
+  const fetchPosts = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("posts")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setPosts((data as Post[]) ?? []);
+    setLoading(false);
+  };
+
+  const handlePost = async () => {
     if (!newPost.trim()) return;
-    setPosts([{ id: Date.now(), category: selectedCategory, text: newPost, replies: 0, hearts: 0, time: "Just now" }, ...posts]);
+    const { data } = await supabase
+      .from("posts")
+      .insert({ category: selectedCategory, content: newPost })
+      .select()
+      .single();
+    if (data) setPosts(prev => [data as Post, ...prev]);
     setNewPost("");
   };
+
+  const handleLike = async (post: Post) => {
+    if (post.liked) return;
+    const newHearts = post.hearts + 1;
+    await supabase.from("posts").update({ hearts: newHearts }).eq("id", post.id);
+    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, hearts: newHearts, liked: true } : p));
+  };
+
+  const toggleReplies = async (post: Post) => {
+    if (expandedPost === post.id) { setExpandedPost(null); return; }
+    setExpandedPost(post.id);
+    if (!post.replyList) {
+      const { data } = await supabase
+        .from("replies")
+        .select("*")
+        .eq("post_id", post.id)
+        .order("created_at", { ascending: true });
+      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, replyList: (data as Reply[]) ?? [] } : p));
+    }
+  };
+
+  const handleReply = async (post: Post) => {
+    const text = replyText[post.id]?.trim();
+    if (!text) return;
+    const { data } = await supabase
+      .from("replies")
+      .insert({ post_id: post.id, content: text })
+      .select()
+      .single();
+    if (data) {
+      await supabase.from("posts").update({ replies: post.replies + 1 }).eq("id", post.id);
+      setPosts(prev => prev.map(p => p.id === post.id
+        ? { ...p, replies: p.replies + 1, replyList: [...(p.replyList ?? []), data as Reply] }
+        : p
+      ));
+    }
+    setReplyText(prev => ({ ...prev, [post.id]: "" }));
+  };
+
+  const filtered = activeCategory === "All" ? posts : posts.filter(p => p.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,43 +138,90 @@ const SafeSpace = () => {
         {/* Category filter */}
         <div className="flex gap-2 flex-wrap mb-6">
           {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+            <button key={cat} onClick={() => setActiveCategory(cat)}
               className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-                activeCategory === cat
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
-            >
+                activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}>
               {cat}
             </button>
           ))}
         </div>
 
         {/* Posts */}
-        <div className="space-y-4">
-          {filtered.map(post => (
-            <div key={post.id} className="p-6 rounded-2xl bg-card border border-border hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
-                  {post.category}
-                </span>
-                <span className="text-xs text-muted-foreground">{post.time}</span>
+        {loading ? (
+          <div className="text-center py-16 text-muted-foreground text-sm">Loading posts...</div>
+        ) : (
+          <div className="space-y-4">
+            {filtered.map(post => (
+              <div key={post.id} className="rounded-2xl bg-card border border-border hover:shadow-lg transition-shadow overflow-hidden">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">{post.category}</span>
+                    <span className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</span>
+                  </div>
+                  <p className="text-foreground leading-relaxed mb-4">{post.content}</p>
+                  <div className="flex items-center gap-4 text-sm">
+                    {/* Reply toggle */}
+                    <button
+                      onClick={() => toggleReplies(post)}
+                      className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <MessageCircle className="h-4 w-4" /> {post.replies}
+                      {expandedPost === post.id ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                    </button>
+                    {/* Like */}
+                    <button
+                      onClick={() => handleLike(post)}
+                      className={`flex items-center gap-1.5 transition-colors ${post.liked ? "text-pink-500" : "text-muted-foreground hover:text-pink-500"}`}
+                    >
+                      <Heart className={`h-4 w-4 ${post.liked ? "fill-pink-500" : ""}`} /> {post.hearts}
+                    </button>
+                    <span className="ml-auto text-xs italic text-muted-foreground">Anonymous</span>
+                  </div>
+                </div>
+
+                {/* Replies section */}
+                {expandedPost === post.id && (
+                  <div className="border-t border-border bg-muted/30 px-6 py-4 space-y-3">
+                    {(post.replyList ?? []).length === 0 ? (
+                      <p className="text-xs text-muted-foreground italic">No replies yet. Be the first to respond.</p>
+                    ) : (
+                      post.replyList!.map(reply => (
+                        <div key={reply.id} className="flex gap-3">
+                          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                            <Shield className="h-3 w-3 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-foreground leading-relaxed">{reply.content}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(reply.created_at)}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    {/* Reply input */}
+                    <div className="flex gap-2 pt-2">
+                      <input
+                        type="text"
+                        placeholder="Write an anonymous reply..."
+                        value={replyText[post.id] ?? ""}
+                        onChange={e => setReplyText(prev => ({ ...prev, [post.id]: e.target.value }))}
+                        onKeyDown={e => e.key === "Enter" && handleReply(post)}
+                        className="flex-1 text-sm px-3 py-2 rounded-xl border border-border bg-background text-foreground outline-none focus:ring-2 focus:ring-primary/30"
+                      />
+                      <button
+                        onClick={() => handleReply(post)}
+                        className="px-4 py-2 rounded-xl text-sm font-bold text-white"
+                        style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}
+                      >
+                        <Send className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-              <p className="text-foreground leading-relaxed mb-4">{post.text}</p>
-              <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                <span className="flex items-center gap-1">
-                  <MessageCircle className="h-4 w-4" /> {post.replies}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Heart className="h-4 w-4" /> {post.hearts}
-                </span>
-                <span className="ml-auto text-xs italic">Anonymous</span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

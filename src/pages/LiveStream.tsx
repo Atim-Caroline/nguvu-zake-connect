@@ -4,6 +4,7 @@ import {
   ArrowLeft, Share2, Users, Send,
   Mic, MicOff, Gift, Hand, CheckCircle,
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const LIVES = [
   { id: "1", host: "Dr. Amara K.", topic: "Healing from Trauma — Live Q&A", photo: "https://images.pexels.com/photos/5214949/pexels-photo-5214949.jpeg?auto=compress&cs=tinysrgb&w=1200&h=1600&fit=crop", viewers: 1243, color: "#7c3aed" },

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Globe, ChevronDown, LogOut, User } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, LogOut, User, MessageCircle } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useLang, Lang } from "@/context/LanguageContext";
 import { supabase } from "@/lib/supabase";
@@ -112,6 +112,13 @@ const Header = () => {
 
           {user ? (
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate("/inbox")}
+                className="p-2 rounded-full border-2 border-border hover:bg-muted transition-all relative"
+                title="Messages"
+              >
+                <MessageCircle className="h-4 w-4 text-primary" />
+              </button>
               <div className="flex items-center gap-2 px-3 py-2 rounded-full border-2 border-border text-sm font-medium">
                 <User className="h-4 w-4 text-primary" />
                 <span className="max-w-[120px] truncate">{user.user_metadata?.name || user.email}</span>

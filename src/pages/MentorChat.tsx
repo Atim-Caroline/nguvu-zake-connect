@@ -4,38 +4,36 @@ import {
   ArrowLeft, Send, Mic, Paperclip, Image, Video,
   FileText, X, Play, CheckCheck, MoreVertical, Phone,
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const MENTORS = [
   { id: "1", name: "Dr. Amara K.", role: "Mental Health Counselor", photo: "https://images.pexels.com/photos/5214949/pexels-photo-5214949.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop", online: true },
-  { id: "2", name: "Pastor Grace N.", role: "Spiritual Guidance", photo: "https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop", online: false },
-  { id: "3", name: "Sarah M.", role: "Career Coach", photo: "https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop", online: true },
+  { id: "2", name: "Pastor Grace N.", role: "Spiritual Guidance", photo: "https://images.pexels.com/photos/7551442/pexels-photo-7551442.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop", online: false },
+  { id: "3", name: "Sarah M.", role: "Career Coach", photo: "https://images.pexels.com/photos/8471939/pexels-photo-8471939.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop", online: true },
 ];
 
 type MsgType = "text" | "voice" | "image" | "video" | "file";
 
 interface Message {
   id: number;
-  from: "me" | "mentor";
-  type: MsgType;
+  room_id: string;
+  sender_id: string;
   content: string;
-  fileName?: string;
-  time: string;
-  read: boolean;
+  type: MsgType;
+  file_url: string | null;
+  created_at: string;
 }
 
-const initialMessages = (mentorName: string): Message[] => [
-  { id: 1, from: "mentor", type: "text", content: `Hi! I'm ${mentorName}. How can I support you today?`, time: "10:00 AM", read: true },
-  { id: 2, from: "me", type: "text", content: "Hello! I've been struggling with work-life balance lately.", time: "10:02 AM", read: true },
-  { id: 3, from: "mentor", type: "text", content: "That's very common. Let's talk through it — what does a typical day look like for you?", time: "10:03 AM", read: true },
-];
-
 const now = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const fmtTime = (ts: string) => new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 export default function MentorChat() {
   const { id } = useParams<{ id: string }>();
   const mentor = MENTORS.find((m) => m.id === id) ?? MENTORS[0];
+  const roomId = `mentor-${mentor.id}`;
 
-  const [messages, setMessages] = useState<Message[]>(initialMessages(mentor.name));
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [recording, setRecording] = useState(false);
   const [recordSecs, setRecordSecs] = useState(0);
@@ -47,23 +45,51 @@ export default function MentorChat() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setUserId(data.session?.user.id ?? null);
+    });
+  }, []);
+
+  // Load messages + subscribe to realtime
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("room_id", roomId)
+        .order("created_at", { ascending: true });
+      setMessages((data as Message[]) ?? []);
+    };
+    load();
+
+    const channel = supabase
+      .channel(`room-${roomId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `room_id=eq.${roomId}` },
+        (payload) => setMessages(prev => [...prev, payload.new as Message])
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [roomId]);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const send = (msg: Omit<Message, "id" | "time" | "read">) => {
-    setMessages((prev) => [...prev, { ...msg, id: Date.now(), time: now(), read: false }]);
-    // simulate mentor reply after 1.5s
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { id: Date.now() + 1, from: "mentor", type: "text", content: "Thank you for sharing that with me. 💜", time: now(), read: true },
-      ]);
-    }, 1500);
+  const sendMessage = async (type: MsgType, content: string, file_url?: string) => {
+    if (!userId) return;
+    await supabase.from("messages").insert({
+      room_id: roomId,
+      sender_id: userId,
+      content,
+      type,
+      file_url: file_url ?? null,
+    });
   };
 
   const sendText = () => {
     if (!text.trim()) return;
-    send({ from: "me", type: "text", content: text });
+    sendMessage("text", text);
     setText("");
   };
 
@@ -76,15 +102,19 @@ export default function MentorChat() {
   const stopRecording = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setRecording(false);
-    send({ from: "me", type: "voice", content: `Voice note (${recordSecs}s)` });
+    sendMessage("voice", `Voice note (${recordSecs}s)`);
     setRecordSecs(0);
   };
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>, type: MsgType) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>, type: MsgType) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    send({ from: "me", type, content: url, fileName: file.name });
+    if (!file || !userId) return;
+    const path = `${userId}/${Date.now()}-${file.name}`;
+    const { data } = await supabase.storage.from("chat-files").upload(path, file);
+    if (data) {
+      const { data: urlData } = supabase.storage.from("chat-files").getPublicUrl(data.path);
+      await sendMessage(type, file.name, urlData.publicUrl);
+    }
     e.target.value = "";
     setAttachMenu(false);
   };
@@ -99,7 +129,6 @@ export default function MentorChat() {
           <Link to="/#mentorship" className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground">
             <ArrowLeft className="h-5 w-5" />
           </Link>
-
           <div className="relative">
             <img src={mentor.photo} alt={mentor.name}
               className="w-10 h-10 rounded-full object-cover object-top border-2 border-primary/30" />
@@ -107,12 +136,10 @@ export default function MentorChat() {
               <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-background" />
             )}
           </div>
-
           <div className="flex-1 min-w-0">
             <p className="font-heading font-semibold text-foreground text-sm leading-tight">{mentor.name}</p>
             <p className="text-xs text-muted-foreground">{mentor.online ? "Online now" : "Last seen recently"} · {mentor.role}</p>
           </div>
-
           <button className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground">
             <Phone className="h-5 w-5" />
           </button>
@@ -124,21 +151,23 @@ export default function MentorChat() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-3 container mx-auto max-w-2xl">
+        {messages.length === 0 && (
+          <p className="text-center text-sm text-muted-foreground py-10">
+            Start the conversation with {mentor.name}
+          </p>
+        )}
         {messages.map((msg) => {
-          const isMe = msg.from === "me";
+          const isMe = msg.sender_id === userId;
           return (
             <div key={msg.id} className={`flex gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
               {!isMe && (
                 <img src={mentor.photo} alt={mentor.name}
                   className="w-8 h-8 rounded-full object-cover object-top shrink-0 self-end" />
               )}
-
               <div className={`max-w-[72%] ${isMe ? "items-end" : "items-start"} flex flex-col gap-1`}>
                 <div
                   className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    isMe
-                      ? "rounded-br-sm text-white"
-                      : "rounded-bl-sm bg-card border border-border text-foreground"
+                    isMe ? "rounded-br-sm text-white" : "rounded-bl-sm bg-card border border-border text-foreground"
                   }`}
                   style={isMe ? { background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" } : {}}
                 >
@@ -149,24 +178,22 @@ export default function MentorChat() {
                       <button className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
                         <Play className="h-4 w-4 fill-current" />
                       </button>
-                      <div className="flex-1">
-                        <div className="flex gap-0.5 items-center h-6">
-                          {Array.from({ length: 20 }).map((_, i) => (
-                            <div key={i} className="w-1 rounded-full bg-current opacity-60"
-                              style={{ height: `${Math.random() * 16 + 4}px` }} />
-                          ))}
-                        </div>
+                      <div className="flex gap-0.5 items-center h-6">
+                        {Array.from({ length: 20 }).map((_, i) => (
+                          <div key={i} className="w-1 rounded-full bg-current opacity-60"
+                            style={{ height: `${Math.random() * 16 + 4}px` }} />
+                        ))}
                       </div>
                       <span className="text-xs opacity-70">{msg.content.match(/\d+s/)?.[0]}</span>
                     </div>
                   )}
 
-                  {msg.type === "image" && (
-                    <img src={msg.content} alt="shared" className="rounded-xl max-w-full max-h-48 object-cover" />
+                  {msg.type === "image" && msg.file_url && (
+                    <img src={msg.file_url} alt="shared" className="rounded-xl max-w-full max-h-48 object-cover" />
                   )}
 
-                  {msg.type === "video" && (
-                    <video src={msg.content} controls className="rounded-xl max-w-full max-h-48" />
+                  {msg.type === "video" && msg.file_url && (
+                    <video src={msg.file_url} controls className="rounded-xl max-w-full max-h-48" />
                   )}
 
                   {msg.type === "file" && (
@@ -175,15 +202,14 @@ export default function MentorChat() {
                         <FileText className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate max-w-[140px]">{msg.fileName}</p>
+                        <p className="text-sm font-medium truncate max-w-[140px]">{msg.content}</p>
                         <p className="text-xs opacity-70">Document</p>
                       </div>
                     </div>
                   )}
                 </div>
-
                 <div className={`flex items-center gap-1 text-xs text-muted-foreground ${isMe ? "flex-row-reverse" : ""}`}>
-                  <span>{msg.time}</span>
+                  <span>{fmtTime(msg.created_at)}</span>
                   {isMe && <CheckCheck className="h-3.5 w-3.5 text-primary" />}
                 </div>
               </div>
@@ -211,16 +237,11 @@ export default function MentorChat() {
             </div>
           ) : (
             <div className="flex items-end gap-2">
-              {/* Attach menu */}
               <div className="relative">
-                <button
-                  onClick={() => setAttachMenu(!attachMenu)}
-                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-muted"
-                  style={{ color: "hsl(var(--muted-foreground))" }}
-                >
+                <button onClick={() => setAttachMenu(!attachMenu)}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-muted text-muted-foreground">
                   <Paperclip className="h-5 w-5" />
                 </button>
-
                 {attachMenu && (
                   <div className="absolute bottom-12 left-0 flex flex-col gap-2 p-2 rounded-2xl bg-card border border-border shadow-xl">
                     <button onClick={() => imageRef.current?.click()}
@@ -248,7 +269,6 @@ export default function MentorChat() {
                 )}
               </div>
 
-              {/* Text input */}
               <div className="flex-1 flex items-end rounded-2xl border border-border bg-card px-4 py-2.5 gap-2">
                 <textarea
                   value={text}
@@ -261,7 +281,6 @@ export default function MentorChat() {
                 />
               </div>
 
-              {/* Voice / Send */}
               {text.trim() ? (
                 <button onClick={sendText}
                   className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 shadow-lg"
@@ -281,7 +300,6 @@ export default function MentorChat() {
         </div>
       </div>
 
-      {/* Hidden file inputs */}
       <input ref={imageRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e, "image")} />
       <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={(e) => handleFile(e, "video")} />
       <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" className="hidden" onChange={(e) => handleFile(e, "file")} />

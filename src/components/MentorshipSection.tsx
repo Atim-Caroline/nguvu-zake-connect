@@ -1,5 +1,7 @@
 import { Star, Video, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const mentors = [
   {
@@ -36,10 +38,17 @@ const mentors = [
 
 const MentorshipSection = () => {
   const navigate = useNavigate();
+  const [authed, setAuthed] = useState(false);
 
-  const handleAction = () => {
-    // redirect to sign in — auth guard
-    navigate("/signin");
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setAuthed(!!session));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const goProtected = (path: string) => {
+    if (authed) navigate(path);
+    else { sessionStorage.setItem("nz_redirect", path); navigate("/signin"); }
   };
 
   return (
@@ -96,14 +105,14 @@ const MentorshipSection = () => {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => navigate(`/chat/${mentor.id}`)}
+                    onClick={() => goProtected(`/chat/${mentor.id}`)}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:bg-muted"
                     style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
                   >
                     <MessageCircle className="h-4 w-4" /> Chat
                   </button>
                   <button
-                    onClick={handleAction}
+                    onClick={() => goProtected(`/live/${mentor.id}`)}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-md"
                     style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}
                   >

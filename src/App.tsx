@@ -15,6 +15,7 @@ import JobSwipe from "./pages/JobSwipe.tsx";
 import MentorChat from "./pages/MentorChat.tsx";
 import LiveStream from "./pages/LiveStream.tsx";
 import AuthGuard from "./components/AuthGuard.tsx";
+import Inbox from "./pages/Inbox.tsx";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/events" element={<Events />} />
             <Route path="/community" element={<AuthGuard><Community /></AuthGuard>} />
             <Route path="/jobs" element={<AuthGuard><JobSwipe /></AuthGuard>} />
+            <Route path="/inbox" element={<AuthGuard><Inbox /></AuthGuard>} />
           <Route path="/chat/:id" element={<AuthGuard><MentorChat /></AuthGuard>} />
           <Route path="/live/:id" element={<AuthGuard><LiveStream /></AuthGuard>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
