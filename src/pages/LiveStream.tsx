@@ -14,14 +14,6 @@ const LIVES = [
 
 const EMOJIS = ["❤️", "🔥", "👏", "💜", "✨", "😍", "💪"];
 
-const SAMPLE_COMMENTS = [
-  { id: 1, user: "Aisha M.", text: "This is so powerful! 💜", color: "#db2777" },
-  { id: 2, user: "Grace O.", text: "Thank you for this session!", color: "#7c3aed" },
-  { id: 3, user: "Fatima K.", text: "I needed to hear this today 🙏", color: "#9333ea" },
-  { id: 4, user: "Zara T.", text: "Can you talk about setting boundaries?", color: "#be185d" },
-  { id: 5, user: "Nadia B.", text: "Joining from Nairobi! 🇰🇪", color: "#6d28d9" },
-];
-
 interface FloatingHeart { id: number; x: number; emoji: string }
 interface Comment { id: number; user: string; text: string; color: string }
 
@@ -31,10 +23,11 @@ const IS_HOST = false;
 export default function LiveStream() {
   const { id } = useParams<{ id: string }>();
   const live = LIVES.find((l) => l.id === id) ?? LIVES[0];
+  const roomId = `live-${live.id}`;
 
   const [viewers, setViewers] = useState(live.viewers);
   const [likes, setLikes] = useState(0);
-  const [comments, setComments] = useState<Comment[]>(SAMPLE_COMMENTS);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [input, setInput] = useState("");
   const [hearts, setHearts] = useState<FloatingHeart[]>([]);
   const [muted, setMuted] = useState(false);
@@ -42,25 +35,65 @@ export default function LiveStream() {
   const [speakRequested, setSpeakRequested] = useState(false);
   const [speakApproved, setSpeakApproved] = useState(false);
   const [showSpeakModal, setShowSpeakModal] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState("You");
   const commentsEndRef = useRef<HTMLDivElement>(null);
+
+  // Get current user
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const u = data.session?.user;
+      if (u) {
+        setUserId(u.id);
+        setUserName(u.user_metadata?.name || u.email?.split("@")[0] || "You");
+      }
+    });
+  }, []);
+
+  // Load existing comments + subscribe to realtime
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("messages")
+        .select("id, sender_id, content, created_at")
+        .eq("room_id", roomId)
+        .eq("type", "text")
+        .order("created_at", { ascending: true })
+        .limit(50);
+      if (data) {
+        const colors = ["#db2777", "#7c3aed", "#9333ea", "#be185d", "#6d28d9"];
+        setComments(data.map((m: any, i: number) => ({
+          id: m.id,
+          user: m.sender_id === userId ? userName : "Member",
+          text: m.content,
+          color: colors[i % colors.length],
+        })));
+      }
+    };
+    load();
+
+    const channel = supabase
+      .channel(`live-${roomId}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "messages",
+        filter: `room_id=eq.${roomId}`,
+      }, (payload) => {
+        const m = payload.new as any;
+        const colors = ["#db2777", "#7c3aed", "#9333ea", "#be185d", "#6d28d9"];
+        setComments(prev => [...prev.slice(-50), {
+          id: m.id,
+          user: m.sender_id === userId ? userName : "Member",
+          text: m.content,
+          color: colors[Math.floor(Math.random() * colors.length)],
+        }]);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [roomId, userId, userName]);
 
   useEffect(() => {
     const t = setInterval(() => setViewers((v) => v + Math.floor(Math.random() * 5) - 2), 3000);
-    return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    const names = ["Blessing A.", "Kezia N.", "Miriam O.", "Esther W.", "Joy K.", "Ruth M."];
-    const texts = ["This is amazing! 🔥", "So inspiring!", "Thank you sis 💜", "Joining from Lagos 🇳🇬", "Can't stop watching!", "You're changing lives!", "More of this please!", "God bless you 🙏"];
-    const colors = ["#db2777", "#7c3aed", "#9333ea", "#be185d", "#6d28d9"];
-    const t = setInterval(() => {
-      setComments((prev) => [...prev.slice(-30), {
-        id: Date.now(),
-        user: names[Math.floor(Math.random() * names.length)],
-        text: texts[Math.floor(Math.random() * texts.length)],
-        color: colors[Math.floor(Math.random() * colors.length)],
-      }]);
-    }, 2500);
     return () => clearInterval(t);
   }, []);
 
@@ -76,9 +109,14 @@ export default function LiveStream() {
     setTimeout(() => setHearts((prev) => prev.filter((hh) => hh.id !== h.id)), 2000);
   };
 
-  const sendComment = () => {
-    if (!input.trim()) return;
-    setComments((prev) => [...prev, { id: Date.now(), user: "You", text: input, color: "#330080" }]);
+  const sendComment = async () => {
+    if (!input.trim() || !userId) return;
+    await supabase.from("messages").insert({
+      room_id: roomId,
+      sender_id: userId,
+      content: input,
+      type: "text",
+    });
     setInput("");
   };
 
