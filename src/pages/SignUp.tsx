@@ -14,8 +14,11 @@ const SignUp = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: connect to auth backend
-    navigate("/");
+    // TODO: connect to real auth backend
+    localStorage.setItem("nz_user", JSON.stringify({ name, email }));
+    const redirect = sessionStorage.getItem("nz_redirect") || "/";
+    sessionStorage.removeItem("nz_redirect");
+    navigate(redirect);
   };
 
   return (

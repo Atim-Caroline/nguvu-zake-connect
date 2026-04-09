@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { LanguageProvider } from "./context/LanguageContext";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import SignIn from "./pages/SignIn.tsx";
@@ -10,27 +11,36 @@ import SignUp from "./pages/SignUp.tsx";
 import SafeSpace from "./pages/SafeSpace.tsx";
 import Events from "./pages/Events.tsx";
 import Community from "./pages/Community.tsx";
+import JobSwipe from "./pages/JobSwipe.tsx";
+import MentorChat from "./pages/MentorChat.tsx";
+import LiveStream from "./pages/LiveStream.tsx";
+import AuthGuard from "./components/AuthGuard.tsx";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/safe-space" element={<SafeSpace />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/community" element={<Community />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <LanguageProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/safe-space" element={<AuthGuard><SafeSpace /></AuthGuard>} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/community" element={<AuthGuard><Community /></AuthGuard>} />
+            <Route path="/jobs" element={<AuthGuard><JobSwipe /></AuthGuard>} />
+          <Route path="/chat/:id" element={<AuthGuard><MentorChat /></AuthGuard>} />
+          <Route path="/live/:id" element={<AuthGuard><LiveStream /></AuthGuard>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 
