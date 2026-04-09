@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const CTASection = () => {
+  const navigate = useNavigate();
   return (
     <section className="py-24 gradient-hero relative overflow-hidden">
       {/* Decorative circles */}
@@ -17,11 +19,11 @@ const CTASection = () => {
           Join thousands of women who have found strength, mentorship, and opportunity in the Nguvu Zake community.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button variant="hero" size="lg" className="text-base">
+          <Button variant="hero" size="lg" className="text-base" onClick={() => navigate("/signup")}>
             Join Nguvu Zake Today
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
-          <Button variant="hero-outline" size="lg" className="text-base">
+          <Button variant="hero-outline" size="lg" className="text-base" onClick={() => navigate("/safe-space")}>
             Learn More
           </Button>
         </div>

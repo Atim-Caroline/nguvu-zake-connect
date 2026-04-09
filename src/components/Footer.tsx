@@ -1,4 +1,35 @@
 import { Globe } from "lucide-react";
+import { Link } from "react-router-dom";
+import logo from "@/assets/logo.png";
+
+const footerLinks = [
+  {
+    title: "Platform",
+    links: [
+      { label: "Safe Space", href: "/safe-space" },
+      { label: "Mentorship", href: "/#mentorship" },
+      { label: "Events", href: "/events" },
+      { label: "Opportunities", href: "/#opportunities" },
+    ],
+  },
+  {
+    title: "Community",
+    links: [
+      { label: "Support Groups", href: "/safe-space" },
+      { label: "Guidelines", href: "#" },
+      { label: "Become a Mentor", href: "/#mentorship" },
+      { label: "FAQ", href: "#" },
+    ],
+  },
+  {
+    title: "Languages",
+    links: [
+      { label: "English", href: "#" },
+      { label: "Luganda", href: "#" },
+      { label: "Kiswahili", href: "#" },
+    ],
+  },
+];
 
 const Footer = () => {
   return (
@@ -7,29 +38,22 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-full gradient-warm flex items-center justify-center">
-                <span className="font-heading font-bold text-primary-foreground">N</span>
-              </div>
-              <span className="font-heading text-lg font-bold text-background">Nguvu Zake</span>
+              <img src={logo} alt="Nguvu Zake" className="h-10 w-auto brightness-0 invert opacity-90" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Her Strength. A safe digital community empowering women across Africa and beyond.
             </p>
           </div>
 
-          {[
-            { title: "Platform", links: ["Safe Space", "Mentorship", "Events", "Opportunities"] },
-            { title: "Community", links: ["Support Groups", "Guidelines", "Become a Mentor", "FAQ"] },
-            { title: "Languages", links: ["English", "Luganda", "Kiswahili"] },
-          ].map((col) => (
+          {footerLinks.map((col) => (
             <div key={col.title}>
               <h4 className="font-heading font-semibold text-background mb-4">{col.title}</h4>
               <ul className="space-y-2">
                 {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm text-muted-foreground hover:text-background transition-colors">
-                      {link}
-                    </a>
+                  <li key={link.label}>
+                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-background transition-colors">
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>

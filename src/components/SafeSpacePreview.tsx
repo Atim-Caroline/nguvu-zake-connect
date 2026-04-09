@@ -1,5 +1,6 @@
 import { MessageCircle, Heart, Shield, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const posts = [
   {
@@ -26,6 +27,7 @@ const posts = [
 ];
 
 const SafeSpacePreview = () => {
+  const navigate = useNavigate();
   return (
     <section id="safe-space" className="py-24 bg-sand/50">
       <div className="container mx-auto px-4">
@@ -43,7 +45,7 @@ const SafeSpacePreview = () => {
               Share your questions, stories, and challenges without fear. Our moderated safe space ensures 
               every woman is heard, respected, and supported.
             </p>
-            <Button size="lg">
+            <Button size="lg" onClick={() => navigate("/safe-space")}>
               Enter Safe Space
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

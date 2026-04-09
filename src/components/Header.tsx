@@ -1,26 +1,31 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Globe } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const navLinks = [
   { label: "Safe Space", href: "#safe-space" },
   { label: "Mentorship", href: "#mentorship" },
-  { label: "Events", href: "#events" },
+  { label: "Events", href: "/events" },
   { label: "Opportunities", href: "#opportunities" },
-  { label: "Community", href: "#community" },
+  { label: "Community", href: "/community" },
 ];
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-card">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <a href="/" className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full gradient-warm flex items-center justify-center">
-            <span className="font-heading text-primary-foreground font-bold text-lg">N</span>
-          </div>
-          <span className="font-heading text-xl font-bold text-foreground">Nguvu Zake</span>
+          <img
+            src={logo}
+            alt="Nguvu Zake"
+            className="h-10 w-auto"
+            style={{ mixBlendMode: "multiply" }}
+          />
         </a>
 
         {/* Desktop nav */}
@@ -40,8 +45,8 @@ const Header = () => {
           <Button variant="ghost" size="icon" className="text-muted-foreground">
             <Globe className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm">Sign In</Button>
-          <Button size="sm">Join Free</Button>
+          <Button variant="outline" size="sm" onClick={() => navigate("/signin")}>Sign In</Button>
+          <Button size="sm" onClick={() => navigate("/signup")}>Join Free</Button>
         </div>
 
         {/* Mobile toggle */}
@@ -68,8 +73,8 @@ const Header = () => {
               </a>
             ))}
             <div className="flex gap-3 pt-2">
-              <Button variant="outline" size="sm" className="flex-1">Sign In</Button>
-              <Button size="sm" className="flex-1">Join Free</Button>
+              <Button variant="outline" size="sm" className="flex-1" onClick={() => { navigate("/signin"); setMobileOpen(false); }}>Sign In</Button>
+              <Button size="sm" className="flex-1" onClick={() => { navigate("/signup"); setMobileOpen(false); }}>Join Free</Button>
             </div>
           </nav>
         </div>

@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Heart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-women.jpg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background image with overlay */}
@@ -14,7 +16,7 @@ const HeroSection = () => {
           width={1920}
           height={1080}
         />
-        <div className="absolute inset-0 gradient-hero opacity-90" />
+        <div className="absolute inset-0 gradient-hero opacity-60" />
       </div>
 
       <div className="relative container mx-auto px-4 py-32">
@@ -35,11 +37,11 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button variant="hero" size="lg" className="text-base">
+            <Button variant="hero" size="lg" className="text-base" onClick={() => navigate("/signup")}>
               Join the Community
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button variant="hero-outline" size="lg" className="text-base">
+            <Button variant="hero-outline" size="lg" className="text-base" onClick={() => navigate("/safe-space")}>
               <Heart className="mr-2 h-5 w-5" />
               Explore Safe Space
             </Button>
