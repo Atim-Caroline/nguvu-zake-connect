@@ -14,6 +14,7 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,21 +28,42 @@ const SignUp = () => {
     setLoading(false);
     if (error) { setError(error.message); return; }
     if (data.user) {
-      // Create profile row
       await supabase.from("profiles").insert({ id: data.user.id, name, email });
     }
-    const redirect = sessionStorage.getItem("nz_redirect") || "/community";
-    sessionStorage.removeItem("nz_redirect");
-    navigate(redirect);
+    setDone(true);
   };
 
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/community` } });
+    await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/` } });
   };
 
   const handleApple = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "apple", options: { redirectTo: `${window.location.origin}/community` } });
+    await supabase.auth.signInWithOAuth({ provider: "apple", options: { redirectTo: `${window.location.origin}/` } });
   };
+
+  if (done) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md p-8 rounded-2xl border border-border bg-card shadow-lg text-center">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ background: "hsl(330 80% 55% / 0.1)" }}>
+            <span className="text-3xl">💜</span>
+          </div>
+          <h1 className="font-heading text-2xl font-bold mb-2">Check your email!</h1>
+          <p className="text-muted-foreground text-sm mb-1">We sent a confirmation link to</p>
+          <p className="font-semibold text-foreground mb-4">{email}</p>
+          <p className="text-muted-foreground text-sm mb-6">
+            Click the link in the email to activate your account and join the community.
+          </p>
+          <button onClick={() => navigate("/signin")}
+            className="w-full py-3 rounded-full font-bold text-white text-sm"
+            style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}>
+            Go to Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">

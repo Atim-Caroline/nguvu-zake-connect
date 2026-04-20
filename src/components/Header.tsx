@@ -119,10 +119,13 @@ const Header = () => {
               >
                 <MessageCircle className="h-4 w-4 text-primary" />
               </button>
-              <div className="flex items-center gap-2 px-3 py-2 rounded-full border-2 border-border text-sm font-medium">
+              <button
+                onClick={() => navigate("/profile")}
+                className="flex items-center gap-2 px-3 py-2 rounded-full border-2 border-border text-sm font-medium hover:bg-muted transition-all"
+              >
                 <User className="h-4 w-4 text-primary" />
                 <span className="max-w-[120px] truncate">{user.user_metadata?.name || user.email}</span>
-              </div>
+              </button>
               <button
                 onClick={handleSignOut}
                 className="flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-lg"

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { supabase } from "@/lib/supabase";
 
@@ -13,25 +13,36 @@ const SignIn = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleConfirm, setGoogleConfirm] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) { setError(error.message); return; }
-    const redirect = sessionStorage.getItem("nz_redirect") || "/community";
+    // Send sign-in notification email
+    supabase.functions.invoke("notify-signin", {
+      body: { email, name: data.user?.user_metadata?.name || "" },
+    }).catch(() => {}); // fire and forget
+    const redirect = sessionStorage.getItem("nz_redirect") || "/";
     sessionStorage.removeItem("nz_redirect");
     navigate(redirect);
   };
 
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/community` } });
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/` },
+    });
   };
 
   const handleApple = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "apple", options: { redirectTo: `${window.location.origin}/community` } });
+    await supabase.auth.signInWithOAuth({
+      provider: "apple",
+      options: { redirectTo: `${window.location.origin}/` },
+    });
   };
 
   return (
@@ -50,7 +61,7 @@ const SignIn = () => {
           <p className="text-muted-foreground text-sm mb-6">Sign in to your account</p>
 
           <div className="space-y-3 mb-6">
-            <button type="button" onClick={handleGoogle}
+            <button type="button" onClick={() => setGoogleConfirm(true)}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border-2 border-border text-sm font-semibold hover:bg-muted transition-all">
               <svg className="h-4 w-4" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -98,6 +109,35 @@ const SignIn = () => {
           </p>
         </div>
       </div>
+
+      {/* Google confirm modal */}
+      {googleConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
+          <div className="w-full max-w-sm rounded-3xl bg-card border border-border shadow-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading font-bold text-lg">Sign in with Google</h3>
+              <button onClick={() => setGoogleConfirm(false)} className="p-1.5 rounded-full hover:bg-muted transition-colors">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6">
+              You'll be redirected to Google to sign in. Your Google email will be used to create or access your Nguvu Zake account.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setGoogleConfirm(false)}
+                className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-border hover:bg-muted transition-all">
+                Cancel
+              </button>
+              <button onClick={() => { setGoogleConfirm(false); handleGoogle(); }}
+                className="flex-1 py-3 rounded-full text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-lg"
+                style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}>
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
