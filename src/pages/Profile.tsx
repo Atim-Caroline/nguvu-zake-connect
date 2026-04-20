@@ -33,20 +33,24 @@ export default function Profile() {
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/signin"); return; }
-      const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
-      if (data) {
-        setProfile(data as Profile);
-        setAvatarUrl(data.avatar_url ?? null);
-        setForm({
-          name: data.name ?? "",
-          nickname: data.nickname ?? "",
-          bio: data.bio ?? "",
-          field: data.field ?? "",
-          age: data.age?.toString() ?? "",
-          gender: data.gender ?? "",
-          profession: data.profession ?? "",
-        });
-      }
+      const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+      const p = data as Profile | null;
+      const fallback: Profile = {
+        id: session.user.id,
+        name: session.user.user_metadata?.name || "",
+        email: session.user.email || "",
+      };
+      setProfile(p ?? fallback);
+      setAvatarUrl(p?.avatar_url ?? null);
+      setForm({
+        name: p?.name ?? fallback.name,
+        nickname: p?.nickname ?? "",
+        bio: p?.bio ?? "",
+        field: p?.field ?? "",
+        age: p?.age?.toString() ?? "",
+        gender: p?.gender ?? "",
+        profession: p?.profession ?? "",
+      });
     };
     load();
   }, [navigate]);
@@ -70,7 +74,9 @@ export default function Profile() {
     if (!profile) return;
     setSaving(true);
     setError("");
-    const { error } = await supabase.from("profiles").update({
+    const { error } = await supabase.from("profiles").upsert({
+      id: profile.id,
+      email: profile.email,
       name: form.name,
       nickname: form.nickname || null,
       bio: form.bio || null,
@@ -78,7 +84,7 @@ export default function Profile() {
       age: form.age ? parseInt(form.age) : null,
       gender: form.gender || null,
       profession: form.profession || null,
-    }).eq("id", profile.id);
+    });
     setSaving(false);
     if (error) { setError(error.message); return; }
     setSaved(true);
