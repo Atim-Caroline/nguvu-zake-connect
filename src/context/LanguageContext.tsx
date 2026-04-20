@@ -22,8 +22,29 @@ const translations: Record<Lang, Record<string, string>> = {
     opportunitiesHub: "Opportunities Hub", opportunitiesDesc: "Jobs, scholarships, volunteer roles, and skill-building programs.",
     multiLang: "Multi-Language", multiLangDesc: "Navigate in English, Luganda, or Kiswahili.",
     supportGroups: "Support Groups", supportGroupsDesc: "Join groups based on shared challenges. Grow together.",
-    // Safe Space
-    yourPostAnon: "Your post will be anonymous", shareOnMind: "Share something on your mind...",
+    // SafeSpacePreview
+    anonSafe: "Anonymous & Safe", voiceMatters: "Your Voice Matters.",
+    identityProtected: "Your Identity Is Protected.",
+    safeSpaceDesc: "Share your questions, stories, and challenges without fear. Our moderated safe space ensures every woman is heard, respected, and supported.",
+    enterSafeSpace: "Enter Safe Space", anonymous: "Anonymous",
+    // OpportunitiesSection
+    opportunitiesLabel: "Opportunities", doorsOpening: "Doors Are Opening",
+    forYou: "For You",
+    opportunitiesSub: "Jobs, scholarships, volunteer roles, and skill-building programs — all in one place.",
+    newFeature: "New Feature", swipeTitle: "Swipe to Find Your Dream Job",
+    swipeDesc: "Tinder-style job matching — swipe right to save, left to skip.",
+    tryJobSwipe: "Try Job Swipe", viewAllOpportunities: "View All Opportunities",
+    // CTA
+    joinThousands: "Join Thousands of Women", yourJourney: "Your Journey",
+    startsHere: "Starts Here",
+    ctaDesc: "Find strength, mentorship, and opportunity in the Nguvu Zake community. You don't have to do it alone.",
+    joinNguvuFree: "Join Nguvu Zake Free",
+    // Footer
+    herStrength: "Her Strength. A safe digital community empowering women across Africa and beyond.",
+    platform: "Platform", community: "Community",
+    supportGroupsFooter: "Support Groups", guidelines: "Guidelines",
+    becomeAMentor: "Become a Mentor", faq: "FAQ",
+    copyright: "© 2026 Nguvu Zake. Built with love for women everywhere.", shareOnMind: "Share something on your mind...",
     post: "Post", loadingPosts: "Loading posts...", noReplies: "No replies yet. Be the first to respond.",
     writeReply: "Write an anonymous reply...", all: "All",
     // Events
@@ -84,8 +105,29 @@ const translations: Record<Lang, Record<string, string>> = {
     opportunitiesHub: "Ekifo ky'Emikisa", opportunitiesDesc: "Emirimu, bursaries, n'ebikolwa by'okuzimba obukugu.",
     multiLang: "Ennimi Nnyingi", multiLangDesc: "Tambula mu Lungereza, Luganda, oba Kiswahili.",
     supportGroups: "Amakuŋŋaana g'Obuyambi", supportGroupsDesc: "Yingira mu makuŋŋaana ag'okubeera awamu. Kulaakulana awamu.",
-    // Safe Space
-    yourPostAnon: "Ebigambo byo binaabaawo nga tewali amanyi", shareOnMind: "Gamba eky'omwoyo gwo...",
+    // SafeSpacePreview
+    anonSafe: "Ekiviiri & Obukuumi", voiceMatters: "Eddoboozi Lyo Lirina Omuwendo.",
+    identityProtected: "Erinnya Lyo Liviiriddwa.",
+    safeSpaceDesc: "Gamba ebibuuzo, ebirowoozo, n'okuzikirira nga totyanga. Ekifo kyaffe ekiviiri kikuuma buli mukazi okuwulirwa, okukiririzibwa, n'okuyambibwa.",
+    enterSafeSpace: "Yingira mu Kifo Ekiviiri", anonymous: "Ekiviiri",
+    // OpportunitiesSection
+    opportunitiesLabel: "Emikisa", doorsOpening: "Emivumo Gikugulukira",
+    forYou: "Gy'oli",
+    opportunitiesSub: "Emirimu, bursaries, ebikolwa by'okuyamba, n'ebikolwa by'okuzimba obukugu — byonna mu kifo kimu.",
+    newFeature: "Ekintu Ekipya", swipeTitle: "Swiipa Okufuna Omulimu Gwo Ogw'Okusuubira",
+    swipeDesc: "Okufanananya n'omulimu — swiipa ddyo okuziga, kkono okusazaamu.",
+    tryJobSwipe: "Gezaako Job Swipe", viewAllOpportunities: "Laba Emikisa Gyonna",
+    // CTA
+    joinThousands: "Yingira n'Abakazi Abangi", yourJourney: "Olugendo Lwo",
+    startsHere: "Lutandika Wano",
+    ctaDesc: "Funa amaanyi, buyigirize, n'emikisa mu kibiina kya Nguvu Zake. Tosobola okukola wekka.",
+    joinNguvuFree: "Yingira mu Nguvu Zake Bwereere",
+    // Footer
+    herStrength: "Amaanyi Ge. Ekibiina ekiviiri eky'obuwulize ekikulaakulanya abakazi mu Afrika n'ebifo byonna.",
+    platform: "Platform", community: "Ekibiina",
+    supportGroupsFooter: "Amakuŋŋaana g'Obuyambi", guidelines: "Amateeka",
+    becomeAMentor: "Beera Omuyigiriza", faq: "Emibuuzo Egisinga Okubuzibwa",
+    copyright: "© 2026 Nguvu Zake. Yakozesebwa n'okwagala eri abakazi bonna.", shareOnMind: "Gamba eky'omwoyo gwo...",
     post: "Tuma", loadingPosts: "Tukutegeka ebigambo...", noReplies: "Tewali zimu. Beera osooka okuddamu.",
     writeReply: "Wandiika okuddamu mu kyama...", all: "Byonna",
     // Events
@@ -146,8 +188,29 @@ const translations: Record<Lang, Record<string, string>> = {
     opportunitiesHub: "Kitovu cha Fursa", opportunitiesDesc: "Kazi, masomo, nafasi za kujitolea, na mipango ya kujenga ujuzi.",
     multiLang: "Lugha Nyingi", multiLangDesc: "Tembelea kwa Kiingereza, Luganda, au Kiswahili.",
     supportGroups: "Vikundi vya Msaada", supportGroupsDesc: "Jiunge na vikundi kulingana na changamoto zinazofanana. Kukua pamoja.",
-    // Safe Space
-    yourPostAnon: "Chapisho lako litakuwa la siri", shareOnMind: "Shiriki kitu kilichoko akilini mwako...",
+    // SafeSpacePreview
+    anonSafe: "Siri & Salama", voiceMatters: "Sauti Yako Ina Maana.",
+    identityProtected: "Utambulisho Wako Umelindwa.",
+    safeSpaceDesc: "Shiriki maswali, hadithi, na changamoto bila hofu. Nafasi yetu salama inahakikisha kila mwanamke anasikika, anaheshimiwa, na kusaidiwa.",
+    enterSafeSpace: "Ingia Nafasi Salama", anonymous: "Bila Jina",
+    // OpportunitiesSection
+    opportunitiesLabel: "Fursa", doorsOpening: "Milango Inafunguka",
+    forYou: "Kwako",
+    opportunitiesSub: "Kazi, masomo, nafasi za kujitolea, na mipango ya kujenga ujuzi — yote mahali pamoja.",
+    newFeature: "Kipengele Kipya", swipeTitle: "Telezesha Kupata Kazi ya Ndoto Yako",
+    swipeDesc: "Kulinganisha kazi kama Tinder — telezesha kulia kuhifadhi, kushoto kuruka.",
+    tryJobSwipe: "Jaribu Job Swipe", viewAllOpportunities: "Ona Fursa Zote",
+    // CTA
+    joinThousands: "Jiunge na Wanawake Wengi", yourJourney: "Safari Yako",
+    startsHere: "Inaanza Hapa",
+    ctaDesc: "Pata nguvu, ushauri, na fursa katika jamii ya Nguvu Zake. Huhitaji kufanya peke yako.",
+    joinNguvuFree: "Jiunge na Nguvu Zake Bure",
+    // Footer
+    herStrength: "Nguvu Yake. Jamii salama ya kidijitali inayowawezesha wanawake Afrika na zaidi.",
+    platform: "Jukwaa", community: "Jamii",
+    supportGroupsFooter: "Vikundi vya Msaada", guidelines: "Miongozo",
+    becomeAMentor: "Kuwa Mshauri", faq: "Maswali Yanayoulizwa Mara Kwa Mara",
+    copyright: "© 2026 Nguvu Zake. Imejengwa kwa upendo kwa wanawake wote.", shareOnMind: "Shiriki kitu kilichoko akilini mwako...",
     post: "Chapisha", loadingPosts: "Inapakia machapisho...", noReplies: "Hakuna majibu bado. Kuwa wa kwanza kujibu.",
     writeReply: "Andika jibu la siri...", all: "Zote",
     // Events
