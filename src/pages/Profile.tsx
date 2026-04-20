@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 const FIELDS = ["Technology", "Medicine", "Business", "Education", "Law", "Finance", "Engineering", "Arts", "Science", "Leadership", "Entrepreneurship", "Research", "Other"];
-const GENDERS = ["Prefer not to say", "Female", "Male"];
+const GENDERS = ["Female", "Male", "Prefer not to say"];
 
 type Profile = {
   id: string; name: string; email: string; nickname?: string;
@@ -185,7 +185,7 @@ export default function Profile() {
               <Label>Gender <span className="text-muted-foreground text-xs">(optional)</span></Label>
               <select value={form.gender} onChange={e => setForm(p => ({ ...p, gender: e.target.value }))}
                 className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30">
-                <option value="">Prefer not to say</option>
+                <option value="">Select gender</option>
                 {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
             </div>
