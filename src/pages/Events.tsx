@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Video, Calendar, Clock, Users, Radio, X, Bell, CheckCircle } from "lucide-react";
+import { useLang } from "@/context/LanguageContext";
 
 const events = [
   { id: "1", title: "Healing Through Community", host: "Dr. Amara K.", type: "Live Q&A", date: "April 12, 2026", time: "6:00 PM EAT", attendees: 142, tag: "Mental Health", isLive: true },
@@ -25,6 +26,7 @@ const RegisterModal = ({ event, onClose }: { event: Event; onClose: () => void }
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
+  const { t } = useLang();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,21 +59,21 @@ const RegisterModal = ({ event, onClose }: { event: Event; onClose: () => void }
                 style={{ background: "hsl(330 80% 55% / 0.1)" }}>
                 <CheckCircle className="h-8 w-8" style={{ color: "hsl(330 80% 55%)" }} />
               </div>
-              <h3 className="font-heading text-xl font-bold text-foreground mb-2">You're registered!</h3>
+              <h3 className="font-heading text-xl font-bold text-foreground mb-2">{t("youreRegistered")}</h3>
               <p className="text-muted-foreground text-sm mb-1">
-                We'll send a reminder to <span className="font-semibold text-foreground">{email}</span>
+                {t("reminderSent")} <span className="font-semibold text-foreground">{email}</span>
               </p>
               <p className="text-muted-foreground text-sm mb-6">
-                when <span className="font-semibold text-foreground">{event.title}</span> goes live.
+                {t("whenGoesLive")}
               </p>
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground bg-muted rounded-xl px-4 py-3">
                 <Bell className="h-4 w-4 text-primary" />
-                Notification will be sent to your email
+                {t("notificationEmail")}
               </div>
               <button onClick={onClose}
                 className="mt-5 w-full py-3 rounded-full font-bold text-white text-sm"
                 style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}>
-                Done
+                {t("done")}
               </button>
             </div>
           ) : (
@@ -87,40 +89,19 @@ const RegisterModal = ({ event, onClose }: { event: Event; onClose: () => void }
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:ring-2 transition-all"
-                    style={{ focusRingColor: "hsl(var(--primary))" } as React.CSSProperties}
-                  />
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">{t("fullName")}</label>
+                  <input type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} required
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:ring-2 transition-all" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:ring-2 transition-all"
-                  />
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">{t("emailAddress")}</label>
+                  <input type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:ring-2 transition-all" />
                 </div>
-
-                <button
-                  type="submit"
+                <button type="submit"
                   className="w-full py-3.5 rounded-full font-bold text-white text-sm transition-all hover:-translate-y-0.5 shadow-lg flex items-center justify-center gap-2"
-                  style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}
-                >
-                  <Bell className="h-4 w-4" />
-                  Attend & Get Notified
+                  style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}>
+                  <Bell className="h-4 w-4" /> {t("attendGetNotified")}
                 </button>
               </form>
             </>
@@ -133,6 +114,7 @@ const RegisterModal = ({ event, onClose }: { event: Event; onClose: () => void }
 
 const Events = () => {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [registerEvent, setRegisterEvent] = useState<Event | null>(null);
 
   return (
@@ -151,8 +133,8 @@ const Events = () => {
 
       <div className="container mx-auto px-4 py-10 max-w-4xl">
         <div className="mb-8">
-          <h1 className="font-heading text-3xl font-bold text-foreground mb-2">Upcoming Events</h1>
-          <p className="text-muted-foreground">Live teachings, workshops, and Q&A sessions — join from anywhere.</p>
+          <h1 className="font-heading text-3xl font-bold text-foreground mb-2">{t("upcomingEvents")}</h1>
+          <p className="text-muted-foreground">{t("liveTeachings")}</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-5">
@@ -189,15 +171,13 @@ const Events = () => {
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5 shadow-lg"
                   style={{ background: "linear-gradient(135deg, #ff0050, #7c3aed)" }}
                 >
-                  <Radio className="h-4 w-4 animate-pulse" /> Join Live Now
+                  <Radio className="h-4 w-4 animate-pulse" /> {t("joinLiveNow")}
                 </button>
               ) : (
-                <button
-                  onClick={() => setRegisterEvent(event)}
+                <button onClick={() => setRegisterEvent(event)}
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5 shadow-md"
-                  style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}
-                >
-                  <Bell className="h-4 w-4" /> Register to Attend
+                  style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}>
+                  <Bell className="h-4 w-4" /> {t("registerToAttend")}
                 </button>
               )}
             </div>

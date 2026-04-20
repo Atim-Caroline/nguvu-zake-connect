@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Heart, ChevronLeft, ChevronRight, Shield } from "lucide-react";
 import { useLang } from "@/context/LanguageContext";
+import { supabase } from "@/lib/supabase";
 
 // Black African women actively working in their fields — Pexels verified
 const slides = [
@@ -42,6 +43,13 @@ const HeroSection = () => {
   const { t } = useLang();
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setAuthed(!!session));
+    return () => subscription.unsubscribe();
+  }, []);
 
   const goTo = useCallback((index: number) => {
     if (animating) return;
@@ -124,7 +132,7 @@ const HeroSection = () => {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 animate-fade-up delay-300">
             <button
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate(authed ? "/community" : "/signup")}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold text-white text-base transition-all duration-300 shadow-2xl hover:-translate-y-1 active:scale-95"
               style={{
                 background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))",

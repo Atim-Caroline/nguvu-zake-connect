@@ -134,7 +134,7 @@ const Header = () => {
                   boxShadow: "0 4px 16px hsl(330 80% 55% / 0.35)",
                 }}
               >
-                <LogOut className="h-4 w-4" /> Sign out
+                <LogOut className="h-4 w-4" /> {t("signOut")}
               </button>
             </div>
           ) : (
@@ -220,7 +220,7 @@ const Header = () => {
                     }}
                     onClick={() => { handleSignOut(); setMobileOpen(false); }}
                   >
-                    <LogOut className="h-4 w-4" /> Sign out
+                    <LogOut className="h-4 w-4" /> {t("signOut")}
                   </button>
                 </>
               ) : (

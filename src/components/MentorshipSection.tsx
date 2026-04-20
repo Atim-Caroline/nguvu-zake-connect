@@ -2,6 +2,7 @@ import { Star, Video, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useLang } from "@/context/LanguageContext";
 
 const mentors = [
   {
@@ -38,6 +39,7 @@ const mentors = [
 
 const MentorshipSection = () => {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
@@ -55,13 +57,11 @@ const MentorshipSection = () => {
     <section id="mentorship" className="py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <span className="text-sm font-semibold text-accent tracking-widest uppercase">Mentorship</span>
+          <span className="text-sm font-semibold text-accent tracking-widest uppercase">{t("mentorship")}</span>
           <h2 className="font-heading text-4xl md:text-5xl font-bold mt-3 text-foreground">
-            Guided by Women Who <span className="text-gradient">Understand</span>
+            {t("guidedByWomen").split("Understand")[0]}<span className="text-gradient">Understand</span>
           </h2>
-          <p className="text-muted-foreground mt-4 max-w-2xl mx-auto text-lg">
-            Book sessions with verified mentors — counselors, pastors, and professionals ready to walk with you.
-          </p>
+          <p className="text-muted-foreground mt-4 max-w-2xl mx-auto text-lg">{t("guidedDesc")}</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -100,23 +100,16 @@ const MentorshipSection = () => {
                   <span className="flex items-center gap-1">
                     <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" /> {mentor.rating}
                   </span>
-                  <span className="text-xs">{mentor.sessions} sessions</span>
+                  <span className="text-xs">{mentor.sessions} {t("sessions")}</span>
                 </div>
 
                 <div className="flex gap-2">
                   <button
                     onClick={() => goProtected(`/chat/${mentor.id}`)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover:bg-muted"
-                    style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                  >
-                    <MessageCircle className="h-4 w-4" /> Chat
-                  </button>
-                  <button
-                    onClick={() => goProtected(`/live/${mentor.id}`)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-md"
+                    className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-md"
                     style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}
                   >
-                    <Video className="h-4 w-4" /> Book Call
+                    <MessageCircle className="h-4 w-4" /> {t("chat")}
                   </button>
                 </div>
               </div>
