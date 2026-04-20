@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Heart, Shield, ArrowLeft, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useLang } from "@/context/LanguageContext";
 
-const categories = ["All", "Relationships", "Mental Health", "Personal Growth", "Career", "Health"];
+const CATEGORIES_EN = ["All", "Relationships", "Mental Health", "Personal Growth", "Career", "Health"];
 
 type Reply = { id: number; content: string; created_at: string };
 type Post = {
@@ -23,6 +24,8 @@ const timeAgo = (ts: string) => {
 };
 
 const SafeSpace = () => {
+  const { t } = useLang();
+  const categories = CATEGORIES_EN;
   const [posts, setPosts] = useState<Post[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [newPost, setNewPost] = useState("");
@@ -112,10 +115,10 @@ const SafeSpace = () => {
         {/* New post */}
         <div className="p-5 rounded-2xl border border-border bg-card mb-6">
           <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1">
-            <Shield className="h-3 w-3" /> Your post will be anonymous
+            <Shield className="h-3 w-3" /> {t("yourPostAnon")}
           </p>
           <Textarea
-            placeholder="Share something on your mind..."
+            placeholder={t("shareOnMind")}
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
             className="mb-3 resize-none"
@@ -130,7 +133,7 @@ const SafeSpace = () => {
               {categories.filter(c => c !== "All").map(c => <option key={c}>{c}</option>)}
             </select>
             <Button size="sm" onClick={handlePost}>
-              <Send className="h-4 w-4 mr-1" /> Post
+              <Send className="h-4 w-4 mr-1" /> {t("post")}
             </Button>
           </div>
         </div>
@@ -149,7 +152,7 @@ const SafeSpace = () => {
 
         {/* Posts */}
         {loading ? (
-          <div className="text-center py-16 text-muted-foreground text-sm">Loading posts...</div>
+          <div className="text-center py-16 text-muted-foreground text-sm">{t("loadingPosts")}</div>
         ) : (
           <div className="space-y-4">
             {filtered.map(post => (

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 const FIELDS = ["Technology", "Medicine", "Business", "Education", "Law", "Finance", "Engineering", "Arts", "Science", "Leadership", "Entrepreneurship", "Research", "Other"];
-const GENDERS = ["Prefer not to say", "Female", "Male", "Non-binary", "Other"];
+const GENDERS = ["Prefer not to say", "Female", "Male"];
 
 type Profile = {
   id: string; name: string; email: string; nickname?: string;
