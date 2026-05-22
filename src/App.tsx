@@ -19,6 +19,7 @@ import Inbox from "./pages/Inbox.tsx";
 import Profile from "./pages/Profile.tsx";
 import Mentorship from "./pages/Mentorship.tsx";
 import Opportunities from "./pages/Opportunities.tsx";
+import GroupChat from "./pages/GroupChat.tsx";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
             <Route path="/mentorship" element={<Mentorship />} />
             <Route path="/opportunities" element={<Opportunities />} />
+            <Route path="/group/:slug" element={<AuthGuard><GroupChat /></AuthGuard>} />
           <Route path="/chat/:id" element={<AuthGuard><MentorChat /></AuthGuard>} />
           <Route path="/live/:id" element={<AuthGuard><LiveStream /></AuthGuard>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

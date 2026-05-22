@@ -6,9 +6,11 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { supabase } from "@/lib/supabase";
+import { useLang } from "@/context/LanguageContext";
 
 const SignIn = () => {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,11 +23,10 @@ const SignIn = () => {
     setLoading(true);
     const { error, data } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) { setError(error.message); return; }
-    // Send sign-in notification email
+    if (error) { setError("Invalid credentials. Please check your email and password."); return; }
     supabase.functions.invoke("notify-signin", {
       body: { email, name: data.user?.user_metadata?.name || "" },
-    }).catch(() => {}); // fire and forget
+    }).catch(() => {});
     const redirect = sessionStorage.getItem("nz_redirect") || "/";
     sessionStorage.removeItem("nz_redirect");
     navigate(redirect);
@@ -34,10 +35,7 @@ const SignIn = () => {
   const handleGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/`,
-        queryParams: { prompt: "select_account" },
-      },
+      options: { redirectTo: `${window.location.origin}/`, queryParams: { prompt: "select_account" } },
     });
   };
 
@@ -52,7 +50,7 @@ const SignIn = () => {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8">
-          <ArrowLeft className="h-4 w-4" /> Back to home
+          <ArrowLeft className="h-4 w-4" /> {t("home")}
         </Link>
 
         <div className="p-8 rounded-2xl border border-border bg-card shadow-lg">
@@ -60,8 +58,8 @@ const SignIn = () => {
             <img src={logo} alt="Nguvu Zake" className="h-12 w-auto" style={{ mixBlendMode: "multiply" }} />
           </div>
 
-          <h1 className="font-heading text-2xl font-bold mb-1">Welcome back</h1>
-          <p className="text-muted-foreground text-sm mb-6">Sign in to your account</p>
+          <h1 className="font-heading text-2xl font-bold mb-1">{t("welcomeBack")}</h1>
+          <p className="text-muted-foreground text-sm mb-6">{t("signInToAccount")}</p>
 
           <div className="space-y-3 mb-6">
             <button type="button" onClick={() => setGoogleConfirm(true)}
@@ -72,21 +70,21 @@ const SignIn = () => {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              Continue with Google
+              {t("continueWithGoogle")}
             </button>
             <button type="button" onClick={handleApple}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border-2 border-border text-sm font-semibold hover:bg-muted transition-all">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
               </svg>
-              Continue with Apple
+              {t("continueWithApple")}
             </button>
           </div>
 
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
             <div className="relative flex justify-center text-xs text-muted-foreground">
-              <span className="bg-card px-3">or continue with email</span>
+              <span className="bg-card px-3">{t("orContinueWithEmail")}</span>
             </div>
           </div>
 
@@ -98,44 +96,41 @@ const SignIn = () => {
               <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? t("signingIn") : t("signIn")}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-primary font-medium hover:underline">Join free</Link>
+            {t("noAccount")}{" "}
+            <Link to="/signup" className="text-primary font-medium hover:underline">{t("joinFree")}</Link>
           </p>
         </div>
       </div>
 
-      {/* Google confirm modal */}
       {googleConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
           style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
           <div className="w-full max-w-sm rounded-3xl bg-card border border-border shadow-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-heading font-bold text-lg">Sign in with Google</h3>
+              <h3 className="font-heading font-bold text-lg">{t("signInWithGoogle")}</h3>
               <button onClick={() => setGoogleConfirm(false)} className="p-1.5 rounded-full hover:bg-muted transition-colors">
                 <X className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
-            <p className="text-sm text-muted-foreground mb-6">
-              You'll be redirected to Google to sign in. Your Google email will be used to create or access your Nguvu Zake account.
-            </p>
+            <p className="text-sm text-muted-foreground mb-6">{t("googleRedirectDesc")}</p>
             <div className="flex gap-3">
               <button onClick={() => setGoogleConfirm(false)}
                 className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-border hover:bg-muted transition-all">
-                Cancel
+                {t("cancel")}
               </button>
               <button onClick={() => { setGoogleConfirm(false); handleGoogle(); }}
                 className="flex-1 py-3 rounded-full text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-lg"
                 style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}>
-                Continue
+                {t("continue")}
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ThumbsUp, ThumbsDown, MapPin, Clock, Briefcase, BookmarkCheck, ChevronRight } from "lucide-react";
+import { ArrowLeft, ThumbsUp, ThumbsDown, MapPin, Clock, Briefcase, BookmarkCheck, ChevronRight, Crown, Lock } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const ALL_JOBS = [
   { id: 1, title: "Software Engineer", company: "TechAfrica Ltd", location: "Nairobi, Kenya", type: "Full-time", salary: "KES 120K–180K/mo", tag: "Technology", color: "#7c3aed", description: "Build scalable web applications using React and Node.js. Remote-friendly team.", skills: ["React", "Node.js", "TypeScript"] },
@@ -23,7 +24,77 @@ export default function JobSwipe() {
   const [flyDir, setFlyDir] = useState<"left" | "right" | null>(null);
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [checkingPremium, setCheckingPremium] = useState(true);
   const dragStart = useRef<number | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("verified")
+          .eq("id", data.session.user.id)
+          .single();
+        setIsPremium(profile?.verified === true);
+      }
+      setCheckingPremium(false);
+    });
+  }, []);
+
+  if (checkingPremium) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isPremium) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="border-b border-border bg-card/50 backdrop-blur sticky top-0 z-10">
+          <div className="container mx-auto px-4 h-14 flex items-center gap-3">
+            <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" /> Home
+            </Link>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="w-full max-w-sm text-center">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+              style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}>
+              <Crown className="h-10 w-10 text-white" />
+            </div>
+            <h2 className="font-heading text-2xl font-bold mb-3">Premium Feature</h2>
+            <p className="text-muted-foreground mb-2">Job Swipe is available for <span className="font-semibold text-primary">verified members</span> only.</p>
+            <p className="text-muted-foreground text-sm mb-8">Get verified to unlock job matching, exclusive opportunities, and more.</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border text-left">
+                <Lock className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Swipe to match jobs</p>
+                  <p className="text-xs text-muted-foreground">Tinder-style job matching</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border text-left">
+                <Lock className="h-5 w-5 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Save & apply to jobs</p>
+                  <p className="text-xs text-muted-foreground">Keep track of your applications</p>
+                </div>
+              </div>
+            </div>
+            <Link to="/profile"
+              className="mt-6 w-full flex items-center justify-center gap-2 py-3.5 rounded-full font-bold text-white text-sm"
+              style={{ background: "linear-gradient(135deg, hsl(330 80% 55%), hsl(270 55% 45%))" }}>
+              <Crown className="h-4 w-4" /> Request Verification
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const current = ALL_JOBS[index];
   const done = index >= ALL_JOBS.length;
